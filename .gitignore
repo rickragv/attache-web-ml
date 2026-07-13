@@ -8,3 +8,4 @@ logs/
 .playwright-mcp/
 src/data/corpus-ext/
 public/models/
+.claude/

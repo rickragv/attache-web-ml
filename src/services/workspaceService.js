@@ -230,12 +230,13 @@ export async function askWorkspace(question) {
     })
     const t0 = performance.now()
     await generateText(prompt, (text) => {
+      const clean = truncateAtRunaway(text)
       const chat = [...useStore.getState().workspace.chat]
       chat[chat.length - 1] = {
         role: 'assistant',
-        text,
+        text: clean,
         streaming: true,
-        cites: citedDocs(text, passages),
+        cites: citedDocs(clean, passages),
       }
       useStore.getState().patchWorkspace({ chat })
     })
@@ -249,6 +250,16 @@ export async function askWorkspace(question) {
   }
 }
 
+/**
+ * Small chat-tuned LLMs sometimes keep going after their answer, inventing
+ * further "User:/Assistant:" turns. MediaPipe GenAI has no stop-sequence
+ * option, so the stream is truncated at the first hallucinated turn marker.
+ */
+export function truncateAtRunaway(text) {
+  const m = text.match(/\n\s*(?:User|Assistant)\s*:/)
+  return m ? text.slice(0, m.index).trimEnd() : text
+}
+
 function buildChatPrompt(question, passages, history) {
   const context = passages
     .map((p, i) => `[${i + 1}] ${p.docTitle} — ${p.heading}\n${p.text.slice(0, 900)}`)
@@ -259,7 +270,7 @@ function buildChatPrompt(question, passages, history) {
   return [
     'You are a document analyst. Answer using ONLY the numbered excerpts below.',
     'Cite excerpts as [1], [2]… after claims. If the excerpts do not contain the answer, say so plainly.',
-    'Be concise. Never repeat a sentence.',
+    'Be concise. Never repeat a sentence. Give exactly one answer, then stop.',
     '',
     context,
     '',

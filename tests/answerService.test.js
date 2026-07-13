@@ -1,5 +1,20 @@
 import { describe, it, expect } from 'vitest'
 import { splitClaims } from '../src/services/answerService.js'
+import { truncateAtRunaway } from '../src/services/workspaceService.js'
+
+describe('truncateAtRunaway', () => {
+  it('cuts hallucinated User:/Assistant: turns from chat output', () => {
+    const runaway =
+      'The directors received $415,000 each [1].\nUser: How is it determined? Assistant: made up'
+    expect(truncateAtRunaway(runaway)).toBe('The directors received $415,000 each [1].')
+  })
+  it('leaves clean answers untouched', () => {
+    expect(truncateAtRunaway('A clean answer [2].')).toBe('A clean answer [2].')
+  })
+  it('does not cut inline mentions of the word user', () => {
+    expect(truncateAtRunaway('The user guide says X [1].')).toBe('The user guide says X [1].')
+  })
+})
 
 describe('splitClaims', () => {
   it('splits sentences and extracts citation markers', () => {

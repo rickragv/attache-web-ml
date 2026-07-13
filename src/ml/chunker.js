@@ -33,11 +33,16 @@ export function chunkDocument(doc, cfg) {
       heading = block.heading
       continue
     }
-    if (buf.length + block.text.length > cfg.targetChars && buf.length >= cfg.minChars) {
-      flush()
-      buf = overlapTail ? overlapTail + '\n' : ''
+    // PDF table pages arrive as one giant blank-line-free block; split it
+    // at line boundaries or the chunk exceeds the embedder's window and
+    // gets silently truncated at inference time
+    for (const piece of splitOversized(block.text, cfg.targetChars)) {
+      if (buf.length + piece.length > cfg.targetChars && buf.length >= cfg.minChars) {
+        flush()
+        buf = overlapTail ? overlapTail + '\n' : ''
+      }
+      buf += (buf ? '\n\n' : '') + piece
     }
-    buf += (buf ? '\n\n' : '') + block.text
   }
   flush()
 
@@ -47,6 +52,27 @@ export function chunkDocument(doc, cfg) {
     chunks[chunks.length - 1].text += '\n\n' + runt.text
   }
   return chunks
+}
+
+function splitOversized(text, targetChars) {
+  if (text.length <= targetChars) return [text]
+  const pieces = []
+  let buf = ''
+  for (const line of text.split('\n')) {
+    if (buf && buf.length + line.length + 1 > targetChars) {
+      pieces.push(buf)
+      buf = ''
+    }
+    // a single line longer than the target gets hard-wrapped as a last resort
+    let rest = line
+    while (rest.length > targetChars) {
+      pieces.push(rest.slice(0, targetChars))
+      rest = rest.slice(targetChars)
+    }
+    buf += (buf ? '\n' : '') + rest
+  }
+  if (buf) pieces.push(buf)
+  return pieces
 }
 
 function splitBlocks(markdown) {

@@ -189,7 +189,7 @@ function WorkspaceChat() {
             <p className="msg__text">{m.text || '…'}</p>
             {m.cites?.length > 0 && !m.streaming && (
               <p className="msg__cites mono dim">
-                {m.cites.map((c) => `[${c.n}] ${c.title} · ${c.heading}`).join('   ')}
+                {m.cites.map((c) => `[${c.n}] ${c.title}${c.heading ? ` · ${c.heading}` : ''}`).join('   ')}
               </p>
             )}
           </div>

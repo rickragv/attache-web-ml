@@ -94,13 +94,19 @@ export async function ingestFiles(fileList) {
     ws.chunks.push(...chunks.map((c) => ({ ...c, docTitle: title })))
     patchDoc({ chunks: chunks.length, status: 'extracting' })
 
-    // 2. entity extraction per chunk (NER + patterns)
+    // 2. entity extraction (NER + patterns) over an even sample — the
+    // graph needs representative coverage, not every chunk
+    let nerChunks = chunks
+    if (chunks.length > cfg.nerChunksPerDoc) {
+      const stride = chunks.length / cfg.nerChunksPerDoc
+      nerChunks = Array.from({ length: cfg.nerChunksPerDoc }, (_, i) => chunks[Math.floor(i * stride)])
+    }
     let docEntities = 0
     let chunkIndex = 0
-    for (const chunk of chunks) {
+    for (const chunk of nerChunks) {
       chunkIndex += 1
       useStore.getState().patchWorkspace({
-        progress: { docName: title, phase: `entities ${chunkIndex}/${chunks.length}` },
+        progress: { docName: title, phase: `entities ${chunkIndex}/${nerChunks.length}` },
       })
       const found = await extractEntities(chunk.text)
       for (const e of found) {
@@ -261,8 +267,10 @@ export function truncateAtRunaway(text) {
 }
 
 function buildChatPrompt(question, passages, history) {
+  // chunks are already size-bounded by the chunker; sending them whole
+  // matters for tables, where truncation conflates adjacent rows
   const context = passages
-    .map((p, i) => `[${i + 1}] ${p.docTitle} — ${p.heading}\n${p.text.slice(0, 900)}`)
+    .map((p, i) => `[${i + 1}] ${p.docTitle} — ${p.heading}\n${p.text}`)
     .join('\n\n')
   const turns = history
     .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.text}`)
@@ -270,6 +278,8 @@ function buildChatPrompt(question, passages, history) {
   return [
     'You are a document analyst. Answer using ONLY the numbered excerpts below.',
     'Cite excerpts as [1], [2]… after claims. If the excerpts do not contain the answer, say so plainly.',
+    'Copy names and numbers EXACTLY as they appear in the excerpts — never round, merge or invent figures.',
+    'In table excerpts, cells are separated by "|" — read each row carefully.',
     'Be concise. Never repeat a sentence. Give exactly one answer, then stop.',
     '',
     context,
@@ -282,8 +292,15 @@ function buildChatPrompt(question, passages, history) {
 
 function citedDocs(text, passages) {
   const nums = [...new Set([...text.matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1])))]
-  return nums
-    .map((n) => passages[n - 1])
-    .filter(Boolean)
-    .map((p, i) => ({ n: nums[i], title: p.docTitle, heading: p.heading }))
+  const seen = new Set()
+  const out = []
+  for (const n of nums) {
+    const p = passages[n - 1]
+    if (!p || seen.has(n)) continue
+    seen.add(n)
+    // PDFs without markdown headings inherit the doc title as heading — skip the duplicate
+    const heading = p.heading && p.heading !== p.docTitle ? p.heading : null
+    out.push({ n, title: p.docTitle, heading })
+  }
+  return out
 }

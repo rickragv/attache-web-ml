@@ -16,20 +16,31 @@ export async function extractPdfText(file, { onProgress } = {}) {
   for (let p = 1; p <= pdf.numPages; p++) {
     const page = await pdf.getPage(p)
     const content = await page.getTextContent()
-    // group items into lines by their y position, then into paragraphs
+    // group items into lines by y position; wide x-gaps inside a line are
+    // table column boundaries — mark them so amounts don't collide into
+    // neighbouring cells when the text is linearized
     let lastY = null
+    let lastEndX = null
     let line = []
     const lines = []
+    const flushLine = () => {
+      if (line.length) lines.push(line.join(''))
+      line = []
+      lastEndX = null
+    }
     for (const item of content.items) {
       const y = Math.round(item.transform[5])
-      if (lastY !== null && Math.abs(y - lastY) > 2) {
-        lines.push(line.join(' '))
-        line = []
+      const x = item.transform[4]
+      if (lastY !== null && Math.abs(y - lastY) > 2) flushLine()
+      const str = item.str.trim()
+      if (str) {
+        const gap = lastEndX !== null ? x - lastEndX : 0
+        line.push(line.length === 0 ? str : (gap > 14 ? ' | ' : ' ') + str)
       }
-      if (item.str.trim()) line.push(item.str.trim())
+      lastEndX = x + (item.width ?? 0)
       lastY = y
     }
-    if (line.length) lines.push(line.join(' '))
+    flushLine()
     pages.push(lines.join('\n'))
     onProgress?.({ page: p, total: pdf.numPages })
   }

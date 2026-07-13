@@ -49,8 +49,13 @@ export const appConfig = {
     historyTurns: 4,
     /** Entities below this mention count stay off the graph. */
     minMentions: 1,
-    /** Big documents (e.g. long PDFs) are sampled evenly to this many chunks. */
-    maxChunksPerDoc: 120,
+    /**
+     * Embedding covers (nearly) everything — retrieval quality collapses on
+     * sampled indexes when the answer lives in one specific table.
+     */
+    maxChunksPerDoc: 500,
+    /** NER is ~10x slower per chunk; the graph samples evenly instead. */
+    nerChunksPerDoc: 100,
     /** Cap graph size so the canvas stays legible. */
     maxEntities: 40,
   },

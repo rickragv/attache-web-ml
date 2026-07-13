@@ -24,9 +24,10 @@ English + हिन्दी).
 
 ![Workspace — knowledge graph and document chat](docs/screenshots/workspace-chat.jpeg)
 
-*Workspace on a real 117-page SEC proxy statement: PDF → 113 chunks embedded → 468 entity
-mentions → typed knowledge graph — then "Who is the CEO and what was his total compensation?"
-answered with citations, entirely in the browser.*
+*Workspace on a real 117-page SEC proxy statement: PDF → 400 chunks embedded → typed
+knowledge graph — then "List all the directors and what compensation each of them received"
+answered from the compensation table with per-director cash/stock/other breakdowns whose
+arithmetic checks out, cited, entirely in the browser.*
 
 <img src="docs/screenshots/mobile-ask.jpeg" alt="Mobile layout" width="300" />
 

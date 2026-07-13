@@ -1,0 +1,92 @@
+/* ------------------------------------------------------------------ */
+/* Attaché design tokens — "field instrument" identity.                */
+/* Dark, committed. Mint = local/live. Brass = caution/download.       */
+/* ------------------------------------------------------------------ */
+
+:root {
+  /* grounds */
+  --bg-0: #0c1210;
+  --bg-1: #101815;
+  --bg-2: #15201b;
+  --bg-3: #1a2721;
+  --bg-raise: #1e2d26;
+
+  /* ink */
+  --ink: #e8efe9;
+  --ink-muted: #94a79b;
+  --ink-faint: #5e7268;
+  --ink-on-accent: #06130d;
+
+  /* accent system */
+  --accent: #59e3a7;
+  --accent-strong: #7defbc;
+  --accent-dim: #2e8c66;
+  --accent-soft: rgba(89, 227, 167, 0.1);
+  --accent-line: rgba(89, 227, 167, 0.35);
+
+  /* semantic */
+  --warn: #e4b75b;
+  --warn-soft: rgba(228, 183, 91, 0.12);
+  --danger: #e27b67;
+  --danger-soft: rgba(226, 123, 103, 0.12);
+
+  /* category hues (corpus taxonomy) */
+  --cat-billing: #e5c36c;
+  --cat-api: #74c7d6;
+  --cat-operations: #e8926f;
+  --cat-security: #b79fe0;
+  --cat-product: #8fd48a;
+  --cat-uploads: #d6a7c3;
+
+  /* lines & shadow */
+  --line: rgba(148, 167, 155, 0.14);
+  --line-strong: rgba(148, 167, 155, 0.28);
+  --shadow-raise: 0 8px 28px rgba(0, 0, 0, 0.4);
+
+  /* type */
+  --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
+  --font-ui: 'Archivo Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'Spline Sans Mono', ui-monospace, Consolas, monospace;
+
+  /* scale (mobile-first) */
+  --text-xs: 0.72rem;
+  --text-sm: 0.82rem;
+  --text-base: 0.95rem;
+  --text-md: 1.08rem;
+  --text-lg: 1.35rem;
+  --text-xl: 1.8rem;
+  --text-hero: clamp(1.9rem, 6vw, 2.7rem);
+
+  /* rhythm */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+
+  /* radii */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+
+  /* layout */
+  --nav-h: 60px;
+  --header-h: 56px;
+  --rail-w: 218px;
+  --content-max: 1100px;
+
+  /* motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 140ms;
+  --dur-med: 260ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-med: 0ms;
+  }
+}

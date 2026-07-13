@@ -1,0 +1,305 @@
+<title>Attaché — LiteRT.js Demo Build Plan</title>
+<style>
+  :root {
+    --paper: #f6f7f5;
+    --card: #ffffff;
+    --ink: #20262b;
+    --muted: #5c6670;
+    --faint: #8a938f;
+    --accent: #146b4e;
+    --accent-ink: #0e4f39;
+    --accent-soft: rgba(20, 107, 78, 0.08);
+    --amber: #9a6a0b;
+    --amber-soft: rgba(154, 106, 11, 0.1);
+    --red: #9a3b2e;
+    --red-soft: rgba(154, 59, 46, 0.1);
+    --line: #dde2dd;
+    --line-strong: #c3cbc4;
+    --code-bg: #eef1ec;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "Cascadia Code", Consolas, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14181a; --card: #1b2124; --ink: #e6eae7; --muted: #9aa49e; --faint: #6f7a74;
+      --accent: #4cc297; --accent-ink: #7bd6b4; --accent-soft: rgba(76,194,151,.1);
+      --amber: #d9a94a; --amber-soft: rgba(217,169,74,.12); --red: #d97e6e; --red-soft: rgba(217,126,110,.12);
+      --line: #2a3230; --line-strong: #3a4441; --code-bg: #232b28;
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f6f7f5; --card: #ffffff; --ink: #20262b; --muted: #5c6670; --faint: #8a938f;
+    --accent: #146b4e; --accent-ink: #0e4f39; --accent-soft: rgba(20,107,78,.08);
+    --amber: #9a6a0b; --amber-soft: rgba(154,106,11,.1); --red: #9a3b2e; --red-soft: rgba(154,59,46,.1);
+    --line: #dde2dd; --line-strong: #c3cbc4; --code-bg: #eef1ec;
+  }
+  :root[data-theme="dark"] {
+    --paper: #14181a; --card: #1b2124; --ink: #e6eae7; --muted: #9aa49e; --faint: #6f7a74;
+    --accent: #4cc297; --accent-ink: #7bd6b4; --accent-soft: rgba(76,194,151,.1);
+    --amber: #d9a94a; --amber-soft: rgba(217,169,74,.12); --red: #d97e6e; --red-soft: rgba(217,126,110,.12);
+    --line: #2a3230; --line-strong: #3a4441; --code-bg: #232b28;
+  }
+
+  html { background: var(--paper); }
+  body { font-family: var(--serif); color: var(--ink); line-height: 1.62; font-size: 17px; margin: 0; }
+  .page { max-width: 880px; margin: 0 auto; padding: 56px 24px 96px; }
+
+  .masthead { border-bottom: 3px double var(--line-strong); padding-bottom: 28px; margin-bottom: 8px; }
+  .masthead .kicker { font-family: var(--sans); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin: 0 0 14px; }
+  h1 { font-size: clamp(30px, 5vw, 42px); line-height: 1.15; margin: 0 0 10px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { color: var(--muted); font-size: 19px; margin: 0; font-style: italic; }
+
+  .memo-lines { display: grid; grid-template-columns: max-content 1fr; gap: 4px 20px; padding: 20px 0; border-bottom: 1px solid var(--line); margin-bottom: 48px; font-size: 15px; }
+  .memo-lines dt { font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); font-weight: 600; padding-top: 3px; }
+  .memo-lines dd { margin: 0; }
+  .memo-lines code { font-size: 13.5px; }
+
+  h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; margin: 64px 0 6px; text-wrap: balance; }
+  h2 .sec { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 10px; }
+  .h2-sub { color: var(--muted); margin: 0 0 20px; font-size: 16px; font-style: italic; }
+  h3 { font-size: 19px; margin: 32px 0 8px; font-weight: 600; }
+  p { margin: 0 0 16px; max-width: 68ch; }
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  strong { font-weight: 600; }
+  code { font-family: var(--mono); font-size: 14px; background: var(--code-bg); padding: 1px 6px; border-radius: 4px; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; overflow-x: auto; margin: 16px 0; }
+  pre code { background: none; padding: 0; font-size: 13.5px; line-height: 1.55; }
+  ul { padding-left: 22px; margin: 0 0 16px; } li { margin-bottom: 6px; max-width: 66ch; }
+
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 14px 20px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+  .callout p { margin: 0; }
+
+  /* station cards */
+  .station { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 26px 28px 22px; margin: 22px 0; }
+  .station.stretch { border-style: dashed; }
+  .st-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 4px; }
+  .st-num { font-family: var(--sans); font-weight: 700; font-size: 13px; color: var(--accent); letter-spacing: 0.06em; white-space: nowrap; }
+  .station h3 { margin: 0; font-size: 21px; flex: 1 1 auto; }
+  .pill { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+  .pill.low { background: var(--accent-soft); color: var(--accent-ink); }
+  .pill.med { background: var(--amber-soft); color: var(--amber); }
+  .pill.high { background: var(--red-soft); color: var(--red); }
+  .story { font-style: italic; color: var(--muted); margin-bottom: 14px; }
+  .station dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin: 0; font-size: 15.5px; }
+  .station dt { font-family: var(--sans); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); font-weight: 600; padding-top: 4px; white-space: nowrap; }
+  .station dd { margin: 0; max-width: 62ch; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--card); margin: 24px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 640px; }
+  th { font-family: var(--sans); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line-strong); }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  .arch { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 26px; margin: 24px 0; overflow-x: auto; }
+  .arch-flow { display: flex; align-items: stretch; gap: 0; min-width: 720px; }
+  .arch-node { flex: 1; border: 1px solid var(--line-strong); border-radius: 8px; padding: 12px 14px; font-family: var(--sans); font-size: 13px; line-height: 1.45; background: var(--paper); }
+  .arch-node b { display: block; font-size: 13px; margin-bottom: 3px; }
+  .arch-node small { color: var(--muted); font-size: 12px; }
+  .arch-node.hot { border-color: var(--accent); background: var(--accent-soft); }
+  .arch-arrow { align-self: center; padding: 0 10px; color: var(--accent); font-family: var(--sans); font-weight: 700; }
+  .arch-note { font-family: var(--sans); font-size: 12.5px; color: var(--muted); margin: 14px 0 0; }
+
+  .phase { display: grid; grid-template-columns: 110px 1fr; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .phase:last-of-type { border-bottom: none; }
+  .phase-tag { font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); padding-top: 4px; }
+  .phase-tag small { display: block; font-weight: 400; color: var(--faint); letter-spacing: 0.04em; margin-top: 3px; }
+  .phase h3 { margin: 0 0 6px; font-size: 18px; }
+  .phase p, .phase ul { margin-bottom: 8px; font-size: 16px; }
+
+  footer { margin-top: 72px; padding-top: 20px; border-top: 3px double var(--line-strong); font-family: var(--sans); font-size: 12.5px; color: var(--faint); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  @media (max-width: 620px) {
+    .station dl, .memo-lines { grid-template-columns: 1fr; gap: 2px 0; }
+    .station dt, .memo-lines dt { padding-top: 10px; }
+    .phase { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="kicker">Build Plan · Demo Application</p>
+    <h1>Attaché — a fully on-device research copilot</h1>
+    <p class="subtitle">A Vitark-agnostic web app that chains LiteRT.js's latest capabilities into one local RAG pipeline: dictate → triage → recall → rerank → answer.</p>
+  </header>
+
+  <dl class="memo-lines">
+    <dt>Re</dt><dd>Standalone LiteRT.js showcase covering use cases Nº 1 (recall), Nº 2 (triage), Nº 4 (rerank), Nº 5 (dictation) in domain-neutral form, with Gemma as the stretch capstone</dd>
+    <dt>Date</dt><dd>13 July 2026</dd>
+    <dt>Repo</dt><dd><code>E:\clone\web-ml</code> — React 19 + Vite, no backend, no API keys, deployable as static files</dd>
+    <dt>Companion</dt><dd>Follows the strategy memo "On-device ML for Vitark"; each station here maps 1:1 to a Vitark integration path</dd>
+  </dl>
+
+  <h2><span class="sec">1</span>The concept</h2>
+  <p class="h2-sub">One coherent app, not four disconnected demos.</p>
+
+  <p><strong>Attaché</strong> is a briefcase you can talk to: drop in your own documents (or use the seeded corpus), then speak or type a question. Everything that happens next — transcription, routing, semantic search, reranking, and answer synthesis — runs inside the browser tab. No server, no upload, no API key. Pull the network plug mid-demo and it keeps working; that moment <em>is</em> the pitch.</p>
+
+  <p>The app is a single-page pipeline with four <strong>stations</strong> plus a stretch capstone. Each station is independently explorable (click into it, tweak inputs, watch tensors move), but the headline interaction is the relay: a spoken question flows left-to-right through all of them. This keeps the demo domain-neutral — the seeded corpus is generic knowledge-base articles — while every station corresponds exactly to a Vitark target:</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Station</th><th>Vitark use case</th><th>LiteRT.js capability showcased</th><th>Model</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Dictate</strong></td><td>Nº 5 — voice dictation</td><td>On-device ASR, WebGPU audio workloads (Google's "5–60×" benchmark class)</td><td><code>whisper-tiny</code> / <code>whisper-base</code></td></tr>
+        <tr><td><strong>Triage</strong></td><td>Nº 2 — query triage</td><td>Zero-shot classification via embedding prototypes, ~ms latency</td><td><code>embeddinggemma-300m</code></td></tr>
+        <tr><td><strong>Recall</strong></td><td>Nº 1 — Chamber recall</td><td>Local vector search over user documents (official demo pattern)</td><td><code>embeddinggemma-300m</code> (shared)</td></tr>
+        <tr><td><strong>Rerank</strong></td><td>Nº 4 — case reranking</td><td>Semantic re-scoring beats keyword order, shown side-by-side</td><td><code>embeddinggemma-300m</code> (shared)</td></tr>
+        <tr><td><strong>Answer</strong> <em>(stretch)</em></td><td>capstone</td><td>Browser LLM generation via LiteRT-LM (<code>.litertlm</code>)</td><td><code>gemma-4-E2B-it-litert-lm</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>Why this shape wins as a showcase:</strong> three of the five stations share one EmbeddingGemma download, so the demo feels rich while costing one model fetch; the relay tells a story any audience understands ("I asked my files a question, out loud, offline"); and each station doubles as the proof-of-concept for a specific Vitark feature, so the demo is reusable engineering, not throwaway theatre.</p>
+  </div>
+
+  <h2><span class="sec">2</span>The stations in detail</h2>
+
+  <article class="station">
+    <div class="st-head"><span class="st-num">Station A</span><h3>Recall — ask your own documents</h3><span class="pill low">Build first</span></div>
+    <p class="story">Drag ten .txt/.md files onto the page. Two seconds later they're semantically searchable. They never left your machine.</p>
+    <dl>
+      <dt>Interaction</dt><dd>Drop zone + seeded corpus (~30 short knowledge-base articles). Each document is chunked (~200 tokens, overlap 40), embedded in a Web Worker, stored in IndexedDB. As-you-type query embedding + cosine top-k with animated similarity scores on each result card.</dd>
+      <dt>Showcases</dt><dd>The exact pattern from Google's official EmbeddingGemma vector-search demo — <code>loadAndCompile(..., {accelerator: 'webgpu'})</code>, batched tensor runs, WASM fallback.</dd>
+      <dt>Proof element</dt><dd>Per-query latency readout ("embedded in 18 ms · WebGPU") + an offline toggle that kills fetch and shows recall still working.</dd>
+    </dl>
+  </article>
+
+  <article class="station">
+    <div class="st-head"><span class="st-num">Station B</span><h3>Triage — zero-shot routing, editable live</h3><span class="pill low">Same model</span></div>
+    <p class="story">The demo ships with routing labels — Billing, Bug report, How-to, Feedback, Spam — and the audience can rewrite them on stage. No retraining, instant new classifier.</p>
+    <dl>
+      <dt>Interaction</dt><dd>A label editor (add/remove/rename categories, each with 2–3 example phrases). Labels become prototype embeddings; incoming queries classify by nearest prototype with a confidence bar. A "gate" visual shows low-value queries (spam/greetings) being stopped before the "expensive pipeline" — the Vitark credits story, told generically.</dd>
+      <dt>Showcases</dt><dd>That one embedding model is a <em>family</em> of classifiers; recomputing five prototypes takes milliseconds, which no server API can match interactively.</dd>
+    </dl>
+  </article>
+
+  <article class="station">
+    <div class="st-head"><span class="st-num">Station C</span><h3>Rerank — keyword order vs. semantic order</h3><span class="pill low">Same model</span></div>
+    <p class="story">Left column: what naive keyword search returns. Right column: the same ten results re-scored semantically, reordering live as you refine the question.</p>
+    <dl>
+      <dt>Interaction</dt><dd>A tiny BM25 (plain JS, ~80 lines) produces the "before" list; embedding similarity re-scores it into the "after" list with animated rank movement arrows. Queries chosen to make keyword search fail visibly (synonyms, paraphrase: "my payment didn't go through" vs. docs saying "transaction declined").</dd>
+      <dt>Showcases</dt><dd>The reranking economics: this re-score is a paid per-call API server-side (Vitark pays Vertex Ranking); here it's free and ~20 ms.</dd>
+    </dl>
+  </article>
+
+  <article class="station">
+    <div class="st-head"><span class="st-num">Station D</span><h3>Dictate — speech in, text out, mic never uploads</h3><span class="pill med">Second model</span></div>
+    <p class="story">Hold the mic button, ask your question out loud, watch the transcript type itself into the search box and flow through the pipeline.</p>
+    <dl>
+      <dt>Interaction</dt><dd>Push-to-talk (not always-on streaming — deliberately scoped down): record up to 30 s via <code>getUserMedia</code>, resample to 16 kHz mono, compute log-mel spectrogram in the worker, run Whisper encoder/decoder, emit transcript. A live waveform + "audio stays here" badge.</dd>
+      <dt>Showcases</dt><dd>LiteRT.js on audio models — the workload class Google benchmarks at 5–60× on WebGPU. Push-to-talk keeps us off the hard streaming-ASR path while still landing the wow.</dd>
+      <dt>Risk note</dt><dd>Whisper <code>.tflite</code> I/O varies by export (some bundle the mel frontend, some don't; decoder may be autoregressive loop in JS). Phase 0 pins this down; <code>whisper-tiny</code> (~40 MB) first, <code>whisper-base</code> if quality disappoints.</dd>
+    </dl>
+  </article>
+
+  <article class="station stretch">
+    <div class="st-head"><span class="st-num">Capstone</span><h3>Answer — Gemma writes the grounded reply</h3><span class="pill high">Stretch</span></div>
+    <p class="story">The top three reranked passages plus your question go to Gemma running in the tab; a cited answer streams out token by token, with tokens/s on the HUD.</p>
+    <dl>
+      <dt>Interaction</dt><dd>Answer panel with streaming text and passage citations [1][2][3]. Completes the story: the browser just did full RAG — retrieval, ranking, and generation — with zero server involvement.</dd>
+      <dt>Risk note</dt><dd>Depends on LiteRT-LM's browser bindings (<code>gemma-4-E2B-it-litert-lm</code> is a multi-GB download; needs WebGPU headroom). Phase 0 verifies the current npm surface; if it's not demo-stable, the fallback is showing the pipeline hand off to <em>any</em> LLM with a "generation is pluggable" framing. The four stations stand on their own.</dd>
+    </dl>
+  </article>
+
+  <h2><span class="sec">3</span>Architecture</h2>
+  <p class="h2-sub">Main thread renders; workers infer; nothing blocks a keystroke.</p>
+
+  <div class="arch">
+    <div class="arch-flow">
+      <div class="arch-node"><b>UI (React)</b><small>stations, HUD, offline toggle, drop zone</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node hot"><b>embed.worker</b><small>@litertjs/core · EmbeddingGemma · WebGPU→WASM</small></div>
+      <div class="arch-arrow">＋</div>
+      <div class="arch-node hot"><b>asr.worker</b><small>mel frontend + Whisper-tiny</small></div>
+      <div class="arch-arrow">＋</div>
+      <div class="arch-node hot"><b>lm.worker</b><small>LiteRT-LM · Gemma (stretch)</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node"><b>Stores</b><small>Cache API: model weights · IndexedDB: chunk vectors · in-mem: BM25 index</small></div>
+    </div>
+    <p class="arch-note">Workers own model lifecycle and expose a typed message protocol (<code>{type:'embed', texts[]} → {vectors, ms, backend}</code>). The perf HUD is fed from worker telemetry: active accelerator, per-op latency, model cache state, cumulative "server calls made: 0".</p>
+  </div>
+
+  <h3>Verified technical ground</h3>
+  <ul>
+    <li><strong>Runtime:</strong> <code>npm i @litertjs/core</code>; WASM assets copied from <code>node_modules/@litertjs/core/wasm/</code> into <code>public/wasm/</code>; <code>loadLiteRt()</code> once per worker, then <code>loadAndCompile(url, {accelerator: 'webgpu'})</code> with automatic CPU fallback for unsupported ops.</li>
+    <li><strong>Models (Hugging Face, all confirmed to exist):</strong> <code>litert-community/embeddinggemma-300m</code>, <code>litert-community/whisper-tiny</code>, <code>litert-community/whisper-base</code>, <code>litert-community/gemma-4-E2B-it-litert-lm</code>. Fetched at runtime with a progress bar, persisted via Cache API — the repo stays lightweight.</li>
+    <li><strong>Vite:</strong> COOP/COEP headers in dev config (worker + WASM threads want cross-origin isolation); static deploy target (GitHub Pages / Cloud Run static) needs the same two headers.</li>
+  </ul>
+
+  <pre><code>web-ml/
+├── index.html · vite.config.js · package.json
+├── public/wasm/                  ← @litertjs/core runtime assets
+└── src/
+    ├── App.jsx · stations/{Recall,Triage,Rerank,Dictate,Answer}.jsx
+    ├── components/{PerfHud,DropZone,OfflineToggle,WaveForm}.jsx
+    ├── ml/
+    │   ├── embed.worker.js · asr.worker.js · lm.worker.js
+    │   ├── modelCache.js             (Cache API fetch + progress)
+    │   ├── vectorStore.js            (IndexedDB chunks + cosine top-k)
+    │   ├── bm25.js · chunker.js · melspec.js
+    │   └── protocol.js               (worker message types)
+    └── data/corpus/                  (~30 seeded articles, EN + a few Hindi)</code></pre>
+
+  <h2><span class="sec">4</span>Build phases</h2>
+
+  <div class="phase">
+    <div class="phase-tag">Phase 0<small>1 day</small></div>
+    <div>
+      <h3>Spike — pin every unknown</h3>
+      <ul>
+        <li>Bare Vite page: load EmbeddingGemma via <code>@litertjs/core</code>; measure download, compile time, per-embedding ms on WebGPU vs. WASM on your machine.</li>
+        <li>Inspect <code>whisper-tiny</code> I/O with <code>getInputDetails()</code> — does it want raw audio or mel features? Autoregressive decode loop needed?</li>
+        <li>Verify LiteRT-LM's current browser package for Gemma; go/no-go the capstone.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-tag">Phase 1<small>2–3 days</small></div>
+    <div>
+      <h3>Core app — Recall + Triage + Rerank on one model</h3>
+      <ul>
+        <li>App shell, embed worker, model cache with progress UI, seeded corpus, drop zone.</li>
+        <li>All three embedding stations working end-to-end with the perf HUD.</li>
+        <li>This alone is a complete, presentable demo — everything after is amplification.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-tag">Phase 2<small>2–3 days</small></div>
+    <div>
+      <h3>Dictate + theatre</h3>
+      <ul>
+        <li>Push-to-talk Whisper station; transcript feeds the relay.</li>
+        <li>Offline toggle, "before/after" keyword-vs-semantic animation, cumulative-zero-server-calls counter, polish pass on the relay flow.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-tag">Phase 3<small>2–4 days, stretch</small></div>
+    <div>
+      <h3>Gemma capstone + ship</h3>
+      <ul>
+        <li>LiteRT-LM answer station with streaming tokens and citations (if Phase 0 said go).</li>
+        <li>Static deploy with COOP/COEP headers; recorded GIF walkthrough; README mapping each station back to its Vitark integration point.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2><span class="sec">5</span>Risks, stated plainly</h2>
+  <ul>
+    <li><strong>Whisper export variance</strong> is the likeliest schedule risk — the mel frontend and decode loop may need hand-rolling in JS. Mitigation: push-to-talk scope, Phase 0 inspection, <code>parakeet</code> models as alternates if Whisper exports fight back.</li>
+    <li><strong>Gemma in-browser is genuinely bleeding-edge</strong> — multi-GB weights, WebGPU memory pressure, young npm surface. It's structured as a capstone precisely so its failure can't sink the demo.</li>
+    <li><strong>First-load weight:</strong> ~200 MB (EmbeddingGemma) + ~40 MB (Whisper) before the capstone. Mitigation: progressive loading (Station A usable while D downloads), Cache API so it's once per machine, and the progress bar framed as part of the story ("this is the whole AI, arriving").</li>
+    <li><strong>Safari:</strong> WebGPU is newer there; WASM/XNNPACK path must be tested as a first-class citizen, and the HUD's backend badge makes the fallback visible rather than embarrassing.</li>
+  </ul>
+
+  <footer>
+    <span>Attaché — LiteRT.js demo build plan · companion to the Vitark on-device memo</span>
+    <span>Verified: @litertjs/core docs · huggingface.co/litert-community</span>
+  </footer>
+
+</div>

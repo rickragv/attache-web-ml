@@ -1,0 +1,10 @@
+node_modules/
+dist/
+public/wasm/
+*.local
+.env
+.DS_Store
+logs/
+.playwright-mcp/
+src/data/corpus-ext/
+public/models/

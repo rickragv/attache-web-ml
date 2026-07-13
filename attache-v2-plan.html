@@ -1,0 +1,337 @@
+<title>Attaché v2 — Advanced On-Device Pipelines Plan</title>
+<style>
+  :root {
+    --paper: #f6f7f5;
+    --card: #ffffff;
+    --ink: #20262b;
+    --muted: #5c6670;
+    --faint: #8a938f;
+    --accent: #146b4e;
+    --accent-ink: #0e4f39;
+    --accent-soft: rgba(20, 107, 78, 0.08);
+    --amber: #9a6a0b;
+    --amber-soft: rgba(154, 106, 11, 0.1);
+    --red: #9a3b2e;
+    --red-soft: rgba(154, 59, 46, 0.1);
+    --line: #dde2dd;
+    --line-strong: #c3cbc4;
+    --code-bg: #eef1ec;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "Cascadia Code", Consolas, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14181a; --card: #1b2124; --ink: #e6eae7; --muted: #9aa49e; --faint: #6f7a74;
+      --accent: #4cc297; --accent-ink: #7bd6b4; --accent-soft: rgba(76,194,151,.1);
+      --amber: #d9a94a; --amber-soft: rgba(217,169,74,.12); --red: #d97e6e; --red-soft: rgba(217,126,110,.12);
+      --line: #2a3230; --line-strong: #3a4441; --code-bg: #232b28;
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f6f7f5; --card: #ffffff; --ink: #20262b; --muted: #5c6670; --faint: #8a938f;
+    --accent: #146b4e; --accent-ink: #0e4f39; --accent-soft: rgba(20,107,78,.08);
+    --amber: #9a6a0b; --amber-soft: rgba(154,106,11,.1); --red: #9a3b2e; --red-soft: rgba(154,59,46,.1);
+    --line: #dde2dd; --line-strong: #c3cbc4; --code-bg: #eef1ec;
+  }
+  :root[data-theme="dark"] {
+    --paper: #14181a; --card: #1b2124; --ink: #e6eae7; --muted: #9aa49e; --faint: #6f7a74;
+    --accent: #4cc297; --accent-ink: #7bd6b4; --accent-soft: rgba(76,194,151,.1);
+    --amber: #d9a94a; --amber-soft: rgba(217,169,74,.12); --red: #d97e6e; --red-soft: rgba(217,126,110,.12);
+    --line: #2a3230; --line-strong: #3a4441; --code-bg: #232b28;
+  }
+
+  html { background: var(--paper); }
+  body { font-family: var(--serif); color: var(--ink); line-height: 1.62; font-size: 17px; margin: 0; }
+  .page { max-width: 880px; margin: 0 auto; padding: 56px 24px 96px; }
+
+  .masthead { border-bottom: 3px double var(--line-strong); padding-bottom: 28px; margin-bottom: 8px; }
+  .masthead .kicker { font-family: var(--sans); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin: 0 0 14px; }
+  h1 { font-size: clamp(30px, 5vw, 42px); line-height: 1.15; margin: 0 0 10px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { color: var(--muted); font-size: 19px; margin: 0; font-style: italic; }
+
+  .memo-lines { display: grid; grid-template-columns: max-content 1fr; gap: 4px 20px; padding: 20px 0; border-bottom: 1px solid var(--line); margin-bottom: 48px; font-size: 15px; }
+  .memo-lines dt { font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); font-weight: 600; padding-top: 3px; }
+  .memo-lines dd { margin: 0; }
+  .memo-lines code { font-size: 13.5px; }
+
+  h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; margin: 64px 0 6px; text-wrap: balance; }
+  h2 .sec { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 10px; }
+  .h2-sub { color: var(--muted); margin: 0 0 20px; font-size: 16px; font-style: italic; }
+  h3 { font-size: 19px; margin: 32px 0 8px; font-weight: 600; }
+  p { margin: 0 0 16px; max-width: 68ch; }
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  strong { font-weight: 600; }
+  code { font-family: var(--mono); font-size: 14px; background: var(--code-bg); padding: 1px 6px; border-radius: 4px; }
+  ul { padding-left: 22px; margin: 0 0 16px; } li { margin-bottom: 6px; max-width: 66ch; }
+
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 14px 20px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+  .callout p { margin: 0; }
+  .callout--warn { border-left-color: var(--amber); background: var(--amber-soft); }
+
+  .pill { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+  .pill.ok { background: var(--accent-soft); color: var(--accent-ink); }
+  .pill.med { background: var(--amber-soft); color: var(--amber); }
+  .pill.high { background: var(--red-soft); color: var(--red); }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--card); margin: 24px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 660px; }
+  th { font-family: var(--sans); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line-strong); }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr.pickrow td { background: var(--accent-soft); }
+
+  .arch { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 26px; margin: 24px 0; overflow-x: auto; }
+  .arch-flow { display: flex; align-items: stretch; min-width: 760px; }
+  .arch-node { flex: 1; border: 1px solid var(--line-strong); border-radius: 8px; padding: 12px 14px; font-family: var(--sans); font-size: 13px; line-height: 1.45; background: var(--paper); }
+  .arch-node b { display: block; font-size: 13px; margin-bottom: 3px; }
+  .arch-node small { color: var(--muted); font-size: 12px; }
+  .arch-node.hot { border-color: var(--accent); background: var(--accent-soft); }
+  .arch-node.guard { border-color: var(--amber); background: var(--amber-soft); }
+  .arch-arrow { align-self: center; padding: 0 10px; color: var(--accent); font-family: var(--sans); font-weight: 700; }
+  .arch-note { font-family: var(--sans); font-size: 12.5px; color: var(--muted); margin: 14px 0 0; }
+
+  .phase { display: grid; grid-template-columns: 120px 1fr; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .phase:last-of-type { border-bottom: none; }
+  .phase-tag { font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); padding-top: 4px; }
+  .phase-tag small { display: block; font-weight: 400; color: var(--faint); letter-spacing: 0.04em; margin-top: 3px; }
+  .phase h3 { margin: 0 0 6px; font-size: 18px; }
+  .phase p, .phase ul { margin-bottom: 8px; font-size: 16px; }
+
+  .mock { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px 24px; margin: 20px 0; font-family: var(--sans); font-size: 14.5px; }
+  .mock .claim { padding: 8px 12px; border-radius: 6px; margin-bottom: 8px; line-height: 1.5; }
+  .mock .claim.ok { background: var(--accent-soft); border-left: 3px solid var(--accent); }
+  .mock .claim.bad { background: var(--red-soft); border-left: 3px solid var(--red); }
+  .mock .cite { font-family: var(--mono); font-size: 12px; color: var(--accent-ink); }
+  .mock .flagnote { font-family: var(--mono); font-size: 12px; color: var(--red); }
+
+  footer { margin-top: 72px; padding-top: 20px; border-top: 3px double var(--line-strong); font-family: var(--sans); font-size: 12.5px; color: var(--faint); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  @media (max-width: 620px) {
+    .memo-lines { grid-template-columns: 1fr; gap: 2px 0; }
+    .memo-lines dt { padding-top: 10px; }
+    .phase { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="kicker">Build Plan · Attaché v2</p>
+    <h1>From search demo to on-device pipelines</h1>
+    <p class="subtitle">Two advanced tracks: a self-verifying RAG stack, and a camera-to-corpus document scanner — plus the systems substrate under both.</p>
+  </header>
+
+  <dl class="memo-lines">
+    <dt>Re</dt><dd>Advancing <code>E:\clone\web-ml</code> beyond embedding search: multi-model pipelines, real-time streams, browser-scale vector infrastructure</dd>
+    <dt>Date</dt><dd>13 July 2026</dd>
+    <dt>Baseline</dt><dd>Attaché v1 shipped &amp; verified: triage · recall · rerank on-device, 373 docs / 3,328 chunks, 25–30 ms queries, 34 unit tests, Docker/FastAPI pipeline</dd>
+    <dt>Prereq</dt><dd>EmbeddingGemma flagship unlock (one license click on Hugging Face — pending)</dd>
+  </dl>
+
+  <h2><span class="sec">1</span>What “complex” means in web ML</h2>
+  <p class="h2-sub">Not a bigger model — more models, cooperating, in real time.</p>
+  <p>Single-model inference is table stakes; every LiteRT.js codepen does it. The frontier that actually
+  impresses (and that WebGPU's 5–60× speedups exist for) is three-fold:</p>
+  <ul>
+    <li><strong>Cascades</strong> — many models in one pipeline, each stage feeding the next, cheap models gating expensive ones;</li>
+    <li><strong>Streams</strong> — camera and microphone pipelines where inference keeps pace with reality;</li>
+    <li><strong>Systems</strong> — indexes, quantization, worker pools: the infrastructure that makes 100k documents feel like 100.</li>
+  </ul>
+
+  <h2><span class="sec">2</span>Candidate slate, ranked</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>#</th><th>Idea</th><th>Class</th><th>Wow</th><th>Prod value</th><th>Risk</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr class="pickrow"><td>1</td><td><strong>Verified RAG</strong> — cross-encoder rerank + Gemma + NLI citation verifier</td><td>Cascade</td><td>●●●●</td><td>●●●●</td><td><span class="pill med">Med</span></td><td><strong>Build — Track A</strong></td></tr>
+        <tr class="pickrow"><td>2</td><td><strong>Camera intake</strong> — scan → dewarp → OCR → indexed corpus</td><td>Stream</td><td>●●●●</td><td>●●●●</td><td><span class="pill high">High</span></td><td><strong>Build — Track B</strong></td></tr>
+        <tr><td>3</td><td>Live recorder — VAD + streaming ASR + live semantic index</td><td>Stream</td><td>●●●●</td><td>●●●○</td><td><span class="pill high">High</span></td><td>After B (reuses its intake UX)</td></tr>
+        <tr><td>4</td><td>Browser vector DB — HNSW-WASM, int8, worker pool, 100k chunks</td><td>Systems</td><td>●●○○</td><td>●●●●</td><td><span class="pill med">Med</span></td><td>Substrate — build when corpus &gt; ~20k chunks</td></tr>
+        <tr><td>5</td><td>Multimodal library — MobileCLIP screenshot search</td><td>Cascade</td><td>●●●○</td><td>●●●○</td><td><span class="pill med">Med</span></td><td>Later — natural Library extension</td></tr>
+        <tr><td>6</td><td>Local learning ranker — click-trained personalization</td><td>Systems</td><td>●●●○</td><td>●●○○</td><td><span class="pill ok">Low</span></td><td>Weekend feature once #1 lands</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <p><strong>Why A + B:</strong> together they cover language and vision, generation and verification, desktop and
+    phone camera — and each maps to a real Vitark surface (A = the research memo pipeline's anti-hallucination
+    ethos; B = "photograph the court order, it becomes searchable"). Ideas 3–6 all inherit infrastructure these
+    two create.</p>
+  </div>
+
+  <h2><span class="sec">3</span>Track A — the Verified RAG stack</h2>
+  <p class="h2-sub">Retrieval → generation → verification. Five models, one pipeline, zero servers.</p>
+
+  <div class="arch">
+    <div class="arch-flow">
+      <div class="arch-node"><b>Recall</b><small>BM25 + EmbeddingGemma bi-encoder<br>top-50 → top-12 <em>(shipped in v1)</em></small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node hot"><b>Precision rerank</b><small>cross-encoder scores (query, chunk) pairs jointly · top-12 → top-4</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node hot"><b>Draft</b><small>Gemma streams a cited answer from the top-4 passages</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node guard"><b>Verify</b><small>NLI model checks each sentence: entailed by its cited chunk?</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node"><b>Render</b><small>claims stream in green (supported) or red (unsupported) as verification completes</small></div>
+    </div>
+    <p class="arch-note">Pipelined, not sequential: sentence N verifies on the NLI model while Gemma is still
+    generating sentence N+2. The claim chips flipping green one by one <em>is</em> the demo.</p>
+  </div>
+
+  <h3>What the user sees</h3>
+  <div class="mock">
+    <div class="claim ok">Refunds are debited from your next settlement batch, not your bank account. <span class="cite">[1] ✓ entailed 0.94</span></div>
+    <div class="claim ok">UPI refunds typically credit within 30 minutes to one business day. <span class="cite">[2] ✓ entailed 0.88</span></div>
+    <div class="claim bad">Refunds above ₹50,000 require manual approval. <span class="flagnote">⚠ not supported by any retrieved passage — flagged</span></div>
+  </div>
+  <p>The third claim is the money shot: the browser catches its own LLM inventing a policy, before the user
+  can be misled. That is Vitark's core promise, demonstrated in 30 lines of pipeline code.</p>
+
+  <h3>Models &amp; sourcing</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Stage</th><th>Model</th><th>Size (int8)</th><th>Source</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Bi-encoder</td><td>EmbeddingGemma-300M</td><td>~179 MB</td><td>litert-community (gated)</td><td><span class="pill med">awaiting license click</span></td></tr>
+        <tr><td>Cross-encoder</td><td>ms-marco-MiniLM-L6-v2</td><td>~23 MB</td><td>PyTorch → <code>litert-torch</code> convert</td><td><span class="pill med">conversion spike</span></td></tr>
+        <tr><td>Generator</td><td>gemma-4-E2B-it (.litertlm)</td><td>multi-GB</td><td>litert-community · MediaPipe GenAI</td><td><span class="pill ok">wired, needs weights</span></td></tr>
+        <tr><td>Verifier</td><td>MobileBERT / DeBERTa-xsmall MNLI</td><td>~25 MB</td><td>PyTorch → <code>litert-torch</code> convert</td><td><span class="pill med">conversion spike</span></td></tr>
+        <tr><td>Tokenizer</td><td>WordPiece (BERT vocab.txt)</td><td>&lt;1 MB</td><td>~80 lines of JS, unit-testable</td><td><span class="pill ok">low risk</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The cross-encoder and NLI conversions share one recipe (BERT-family encoder, two-segment input,
+  classification head), one WordPiece tokenizer, and one <code>scripts/convert-model.py</code> — build it once,
+  get both models. Conda env <code>legal-py312</code> already exists for the Python side.</p>
+
+  <h3>Architecture changes in the app</h3>
+  <ul>
+    <li><code>src/ml/pipeline/</code> — a declarative stage-graph runner: stages declare inputs/outputs, the runner overlaps execution and feeds the HUD per-stage timings. Replaces the hand-wired search flow.</li>
+    <li><code>src/ml/scoring/crossEncoder.js</code> + <code>src/ml/verify/nli.js</code> — same provider pattern as v1 (config-driven URLs, quality tiers, honest fallbacks: no cross-encoder → bi-encoder order stands; no NLI → claims render unverified with a badge saying so).</li>
+    <li>Ask view gains a <strong>pipeline inspector</strong>: a collapsible rail showing each stage's model, backend and ms — the System view's honesty, inlined into the flow.</li>
+  </ul>
+
+  <h2><span class="sec">4</span>Track B — camera-to-corpus intake</h2>
+  <p class="h2-sub">Photograph a document; ten seconds later it answers questions. Phone-first.</p>
+
+  <div class="arch">
+    <div class="arch-flow">
+      <div class="arch-node"><b>Camera</b><small>getUserMedia stream · guide overlay at ~15 fps</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node hot"><b>Detect</b><small>document quad detection (segmentation model or classical corner detect fallback)</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node"><b>Dewarp</b><small>homography from quad → flat page, GPU canvas transform</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node hot"><b>OCR</b><small>text detection + recognition (PaddleOCR-class det/rec pair)</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node"><b>Index</b><small>docFromUpload → chunk → embed → searchable <em>(v1 code, unchanged)</em></small></div>
+    </div>
+    <p class="arch-note">Everything right of Detect reuses v1 infrastructure — the Library ingestion path was
+    built for exactly this hand-off.</p>
+  </div>
+
+  <h3>The honest risk: OCR model selection</h3>
+  <p>Browser-grade OCR on LiteRT is the least-proven link in this plan. Phase B0 evaluates, in order:</p>
+  <ul>
+    <li><strong>PaddleOCR v4 det+rec tflite exports</strong> (~5 MB + ~11 MB) — best quality/size if the exports run clean on LiteRT.js; needs CTC decode in JS (~60 lines);</li>
+    <li><strong>Keras-OCR / EAST-class</strong> tflite alternatives;</li>
+    <li><strong>Fallback: Tesseract.js</strong> (WASM, not LiteRT) — keeps the feature shippable while the LiteRT path matures; the provider chain pattern makes the swap invisible to the UI.</li>
+  </ul>
+  <p>Devanagari OCR is explicitly <em>out of scope for v2</em> (Latin-script first); it becomes a v3 goal with
+  a Hindi-capable recognition model.</p>
+
+  <h3>Mobile UX spec</h3>
+  <ul>
+    <li>New <strong>Scan</strong> action in Library (mobile: prominent camera FAB): full-screen viewfinder, detected quad glows mint when stable, auto-captures after 1 s of stability.</li>
+    <li>Review screen: dewarped page + extracted text side by side; user confirms → indexed with <code>collection: scanned</code>, camera badge in Library.</li>
+    <li>Offline end-to-end once models are cached — the courtroom story, now with a camera.</li>
+  </ul>
+
+  <h2><span class="sec">5</span>The substrate — when search must scale</h2>
+  <p>Both tracks eventually stress v1's brute-force scan (fine to ~20k chunks, measured). The substrate
+  upgrade, built as its own module when triggered: <strong>HNSW index in WASM</strong> (or a tuned IVF in plain
+  JS — spike decides), <strong>int8 vector quantization</strong> (4× memory cut, negligible recall loss at 768-d),
+  and a <strong>worker-pool embedder</strong> (N workers × XNNPACK for bulk indexing; the litert main-thread
+  constraint applies to LiteRT only — quantized scoring and index maintenance parallelize freely).
+  Target: 100k chunks, &lt;10 ms p95 query, index persisted incrementally to IndexedDB.</p>
+
+  <h2><span class="sec">6</span>Build sequence</h2>
+
+  <div class="phase">
+    <div class="phase-tag">Phase 0<small>2 days · gate</small></div>
+    <div>
+      <h3>Spikes — kill the unknowns first</h3>
+      <ul>
+        <li><strong>A-spike:</strong> <code>litert-torch</code> conversion recipe: MiniLM cross-encoder → .tflite → runs on LiteRT.js with correct scores vs PyTorch reference (tolerance test). Same recipe smoke-tested on the NLI model.</li>
+        <li><strong>B-spike:</strong> PaddleOCR det/rec exports on LiteRT.js against 5 photographed test documents; fall back decision by end of day 2.</li>
+        <li><strong>Unlock:</strong> EmbeddingGemma flagship verified end-to-end (needs your license click — everything downstream of retrieval quality benefits).</li>
+      </ul>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-tag">Phase A1<small>2–3 days</small></div>
+    <div>
+      <h3>Pipeline runner + cross-encoder rerank</h3>
+      <p>Stage-graph runner, WordPiece tokenizer (unit-tested), cross-encoder stage behind config, pipeline
+      inspector UI. Compare view gains a third column: bi-encoder order vs cross-encoder order — the
+      precision jump made visible.</p>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-tag">Phase A2<small>2 days</small></div>
+    <div>
+      <h3>Gemma answers, streaming</h3>
+      <p>Wire the existing gemmaProvider to real weights; streaming claim renderer with citation anchors;
+      per-token HUD (tokens/s). Ship behind <code>features.answer</code>.</p>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-tag">Phase A3<small>2–3 days</small></div>
+    <div>
+      <h3>NLI verifier — the headline</h3>
+      <p>Sentence splitter, NLI stage, claim chips (entailed / contradicted / unsupported) flipping live during
+      generation, "N of M claims verified" summary line. Regression suite: 20 hand-built (claim, chunk,
+      expected-verdict) fixtures.</p>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-tag">Phase B1<small>2–3 days</small></div>
+    <div>
+      <h3>Scan capture &amp; dewarp</h3>
+      <p>Viewfinder, quad detection at 10–15 fps with stability auto-capture, homography dewarp, review screen.
+      Ships with whatever detector won the spike.</p>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-tag">Phase B2<small>2–3 days</small></div>
+    <div>
+      <h3>OCR → index</h3>
+      <p>Recognition + CTC decode, hand-off to the v1 ingestion path, <code>scanned</code> collection, camera
+      badges, end-to-end offline test on a phone.</p>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-tag">Phase C<small>when triggered</small></div>
+    <div>
+      <h3>Scale substrate</h3>
+      <p>HNSW/IVF spike → int8 quantization → worker-pool bulk indexing. Trigger: corpus &gt; 20k chunks or
+      p95 query &gt; 50 ms.</p>
+    </div>
+  </div>
+
+  <h2><span class="sec">7</span>Risks, stated plainly</h2>
+  <ul>
+    <li><strong>Model conversion is the new risk class.</strong> v1 only consumed pre-built .tflite files; Track A's cross-encoder and NLI both require <code>litert-torch</code> conversions we haven't exercised. That's why Phase 0 is a hard gate, with score-parity tests against PyTorch — not just "it loads".</li>
+    <li><strong>OCR may land on the WASM fallback.</strong> If PaddleOCR exports fight back, v2 ships scan-to-search on Tesseract.js and swaps the provider later — the feature is not hostage to the runtime.</li>
+    <li><strong>Gemma's multi-GB download</strong> confines the full Track A demo to desktop/laptop; mobile gets retrieval + verification with generation marked "desktop feature" honestly.</li>
+    <li><strong>Weight budget:</strong> v2 adds ~50 MB (cross-encoder + NLI) to the ~186 MB flagship baseline before Gemma. Progressive loading stays first-class: every stage usable the moment its model lands, later stages appear as they arrive.</li>
+    <li><strong>NLI verdicts are probabilistic</strong> — the UI must say "not supported by retrieved passages", never "false". Wording is part of the spec, not polish.</li>
+  </ul>
+
+  <footer>
+    <span>Attaché v2 — advanced pipelines plan · follows the v1 build (shipped 13 Jul 2026)</span>
+    <span>Baseline metrics: 3,328 chunks · 25–30 ms queries · 34 unit tests passing</span>
+  </footer>
+
+</div>

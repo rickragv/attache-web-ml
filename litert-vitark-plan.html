@@ -1,0 +1,367 @@
+<title>LiteRT.js × Vitark — On-Device ML Plan</title>
+<style>
+  :root {
+    --paper: #f6f7f5;
+    --card: #ffffff;
+    --ink: #20262b;
+    --muted: #5c6670;
+    --faint: #8a938f;
+    --accent: #146b4e;
+    --accent-ink: #0e4f39;
+    --accent-soft: rgba(20, 107, 78, 0.08);
+    --amber: #9a6a0b;
+    --amber-soft: rgba(154, 106, 11, 0.1);
+    --red: #9a3b2e;
+    --red-soft: rgba(154, 59, 46, 0.1);
+    --line: #dde2dd;
+    --line-strong: #c3cbc4;
+    --code-bg: #eef1ec;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "Cascadia Code", Consolas, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14181a;
+      --card: #1b2124;
+      --ink: #e6eae7;
+      --muted: #9aa49e;
+      --faint: #6f7a74;
+      --accent: #4cc297;
+      --accent-ink: #7bd6b4;
+      --accent-soft: rgba(76, 194, 151, 0.1);
+      --amber: #d9a94a;
+      --amber-soft: rgba(217, 169, 74, 0.12);
+      --red: #d97e6e;
+      --red-soft: rgba(217, 126, 110, 0.12);
+      --line: #2a3230;
+      --line-strong: #3a4441;
+      --code-bg: #232b28;
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f6f7f5; --card: #ffffff; --ink: #20262b; --muted: #5c6670; --faint: #8a938f;
+    --accent: #146b4e; --accent-ink: #0e4f39; --accent-soft: rgba(20,107,78,.08);
+    --amber: #9a6a0b; --amber-soft: rgba(154,106,11,.1); --red: #9a3b2e; --red-soft: rgba(154,59,46,.1);
+    --line: #dde2dd; --line-strong: #c3cbc4; --code-bg: #eef1ec;
+  }
+  :root[data-theme="dark"] {
+    --paper: #14181a; --card: #1b2124; --ink: #e6eae7; --muted: #9aa49e; --faint: #6f7a74;
+    --accent: #4cc297; --accent-ink: #7bd6b4; --accent-soft: rgba(76,194,151,.1);
+    --amber: #d9a94a; --amber-soft: rgba(217,169,74,.12); --red: #d97e6e; --red-soft: rgba(217,126,110,.12);
+    --line: #2a3230; --line-strong: #3a4441; --code-bg: #232b28;
+  }
+
+  html { background: var(--paper); }
+  body {
+    font-family: var(--serif);
+    color: var(--ink);
+    line-height: 1.62;
+    font-size: 17px;
+    margin: 0;
+  }
+  .page { max-width: 880px; margin: 0 auto; padding: 56px 24px 96px; }
+
+  /* ---------- memo top matter ---------- */
+  .masthead { border-bottom: 3px double var(--line-strong); padding-bottom: 28px; margin-bottom: 8px; }
+  .masthead .kicker {
+    font-family: var(--sans); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin: 0 0 14px;
+  }
+  h1 {
+    font-size: clamp(30px, 5vw, 42px); line-height: 1.15; margin: 0 0 10px;
+    font-weight: 600; letter-spacing: -0.01em; text-wrap: balance;
+  }
+  .subtitle { color: var(--muted); font-size: 19px; margin: 0; font-style: italic; }
+
+  .memo-lines { display: grid; grid-template-columns: max-content 1fr; gap: 4px 20px; padding: 20px 0; border-bottom: 1px solid var(--line); margin-bottom: 48px; font-size: 15px; }
+  .memo-lines dt { font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); font-weight: 600; padding-top: 3px; }
+  .memo-lines dd { margin: 0; }
+  .memo-lines code { font-size: 13.5px; }
+
+  /* ---------- general ---------- */
+  h2 {
+    font-size: 26px; font-weight: 600; letter-spacing: -0.01em;
+    margin: 64px 0 6px; text-wrap: balance;
+  }
+  h2 .sec { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 10px; }
+  .h2-sub { color: var(--muted); margin: 0 0 20px; font-size: 16px; font-style: italic; }
+  h3 { font-size: 19px; margin: 32px 0 8px; font-weight: 600; }
+  p { margin: 0 0 16px; max-width: 68ch; }
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  strong { font-weight: 600; }
+  code { font-family: var(--mono); font-size: 14px; background: var(--code-bg); padding: 1px 6px; border-radius: 4px; }
+  ul { padding-left: 22px; margin: 0 0 16px; } li { margin-bottom: 6px; max-width: 66ch; }
+
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: 14px 20px; margin: 20px 0; border-radius: 0 6px 6px 0;
+  }
+  .callout p { margin: 0; }
+
+  /* ---------- lever legend ---------- */
+  .levers { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 8px; }
+  .lever { flex: 1 1 180px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+  .lever b { display: block; font-family: var(--sans); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .lever span { font-size: 14px; color: var(--muted); }
+
+  /* ---------- use-case cards ---------- */
+  .case { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 26px 28px 22px; margin: 22px 0; position: relative; }
+  .case.pick { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .case-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 4px; }
+  .rank { font-family: var(--sans); font-weight: 700; font-size: 13px; color: var(--accent); letter-spacing: 0.06em; white-space: nowrap; }
+  .case h3 { margin: 0; font-size: 21px; flex: 1 1 auto; }
+  .pill { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+  .pill.low { background: var(--accent-soft); color: var(--accent-ink); }
+  .pill.med { background: var(--amber-soft); color: var(--amber); }
+  .pill.high { background: var(--red-soft); color: var(--red); }
+  .pill.pickbadge { background: var(--accent); color: var(--paper); }
+  .story { font-style: italic; color: var(--muted); margin-bottom: 14px; }
+  .case dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin: 0; font-size: 15.5px; }
+  .case dt { font-family: var(--sans); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); font-weight: 600; padding-top: 4px; white-space: nowrap; }
+  .case dd { margin: 0; max-width: 62ch; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 99px; border: 1px solid var(--line-strong); color: var(--muted); }
+  .chip.on { border-color: var(--accent); color: var(--accent-ink); background: var(--accent-soft); }
+
+  /* ---------- tables ---------- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--card); margin: 24px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 640px; }
+  th { font-family: var(--sans); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line-strong); }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td.num { font-variant-numeric: tabular-nums; }
+  .dot { color: var(--accent); letter-spacing: 2px; font-size: 14px; }
+  .dot .off { color: var(--line-strong); }
+  tr.pickrow td { background: var(--accent-soft); }
+
+  /* ---------- architecture ---------- */
+  .arch { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 26px; margin: 24px 0; overflow-x: auto; }
+  .arch-flow { display: flex; align-items: stretch; gap: 0; min-width: 700px; }
+  .arch-node { flex: 1; border: 1px solid var(--line-strong); border-radius: 8px; padding: 12px 14px; font-family: var(--sans); font-size: 13px; line-height: 1.45; background: var(--paper); }
+  .arch-node b { display: block; font-size: 13px; margin-bottom: 3px; }
+  .arch-node small { color: var(--muted); font-size: 12px; }
+  .arch-node.hot { border-color: var(--accent); background: var(--accent-soft); }
+  .arch-arrow { align-self: center; padding: 0 10px; color: var(--accent); font-family: var(--sans); font-weight: 700; }
+  .arch-note { font-family: var(--sans); font-size: 12.5px; color: var(--muted); margin: 14px 0 0; }
+
+  /* ---------- phases ---------- */
+  .phase { display: grid; grid-template-columns: 110px 1fr; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .phase:last-of-type { border-bottom: none; }
+  .phase-tag { font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); padding-top: 4px; }
+  .phase-tag small { display: block; font-weight: 400; color: var(--faint); letter-spacing: 0.04em; margin-top: 3px; }
+  .phase h3 { margin: 0 0 6px; font-size: 18px; }
+  .phase p, .phase ul { margin-bottom: 8px; font-size: 16px; }
+
+  footer { margin-top: 72px; padding-top: 20px; border-top: 3px double var(--line-strong); font-family: var(--sans); font-size: 12.5px; color: var(--faint); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  @media (max-width: 620px) {
+    .case dl, .memo-lines { grid-template-columns: 1fr; gap: 2px 0; }
+    .case dt, .memo-lines dt { padding-top: 10px; }
+    .phase { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="kicker">Memorandum · Product &amp; Engineering</p>
+    <h1>On-device ML for Vitark, via LiteRT.js</h1>
+    <p class="subtitle">Five production use cases, one recommended demo, and a build plan.</p>
+  </header>
+
+  <dl class="memo-lines">
+    <dt>Re</dt><dd>Bringing browser-side inference (LiteRT.js, WebGPU/WASM) to the Vitark legal-research platform</dd>
+    <dt>Date</dt><dd>13 July 2026</dd>
+    <dt>Product</dt><dd>Vitark AI — persona-based legal research over Indian case law (SC + HC, 1971–2026), live at <code>app.vitark.ai</code></dd>
+    <dt>Demo repo</dt><dd><code>E:\clone\web-ml</code> (standalone), integrating later into <code>E:\clone\vitark-agents\frontend</code></dd>
+  </dl>
+
+  <h2><span class="sec">1</span>The opportunity</h2>
+  <p class="h2-sub">Why a text-heavy legal platform is a strong fit for browser inference.</p>
+
+  <p><strong>LiteRT.js</strong> is Google's successor to TensorFlow.js for running <code>.tflite</code> models directly in the browser — XNNPACK on CPU/WASM, ML&nbsp;Drift on WebGPU, with claimed 5–60× GPU speedups over CPU on real-time workloads. Models convert from PyTorch/JAX/TF in one step and ship from the Hugging Face LiteRT community. The npm package is <code>@litertjs/core</code>.</p>
+
+  <p>Today, <strong>every</strong> intelligent behaviour in Vitark is a paid server round-trip: the Gemini coordinator agent triages even a "hello", retrieval fans out through the MCP service, reranking pays the Vertex AI Ranking API per call, and each research call debits user credits. There is currently <em>zero</em> client-side ML in the frontend. That means every place where a small model in the browser can answer in ~10&nbsp;ms for free is currently either a billable LLM call or simply doesn't exist as a feature.</p>
+
+  <p>On-device inference earns its place through four levers. Every use case below is scored against them:</p>
+
+  <div class="levers">
+    <div class="lever"><b>Privacy</b><span>Lawyer's client facts never leave the machine — attorney–client privilege is the strongest possible on-device argument.</span></div>
+    <div class="lever"><b>Cost</b><span>Replaces billable Gemini / Vertex Ranking calls with free client compute. Protects both your margin and the user's credits.</span></div>
+    <div class="lever"><b>Latency</b><span>~10–50 ms as-you-type feedback vs. a 1–3 s server round-trip. Enables interactions that are impossible over the network.</span></div>
+    <div class="lever"><b>Offline</b><span>Indian courtrooms have genuinely unreliable connectivity. A lawyer's own research should still be searchable at the bar.</span></div>
+  </div>
+
+  <h2><span class="sec">2</span>Top 5 production use cases, ranked</h2>
+  <p class="h2-sub">Ranked by (value to Vitark × feasibility). Highlighted chips = levers that apply.</p>
+
+  <article class="case pick">
+    <div class="case-head">
+      <span class="rank">Nº 1</span>
+      <h3>Chamber Recall — semantic search over your own research</h3>
+      <span class="pill pickbadge">Demo pick</span>
+      <span class="pill low">Low risk</span>
+    </div>
+    <p class="story">"Before I burn credits, has my chamber already researched anticipatory bail under S. 438 for economic offences?" — instant, even offline in the courtroom.</p>
+    <dl>
+      <dt>What it does</dt><dd>Embeds every memo in the user's Chamber (and session history) locally with EmbeddingGemma; as the user types in the search bar, a vector search over their own archive surfaces prior memos <em>before</em> they spend credits on a new research run.</dd>
+      <dt>Why on-device</dt><dd><span class="chips"><span class="chip on">Privacy</span><span class="chip on">Cost</span><span class="chip on">Latency</span><span class="chip on">Offline</span></span></dd>
+      <dt>Model</dt><dd><code>EmbeddingGemma-300M</code> (.tflite, quantized ≈ 150–200 MB, multilingual incl. Hindi) — the exact model Google's official LiteRT.js vector-search demo uses, so the path is proven.</dd>
+      <dt>Integration</dt><dd><code>ChamberPage.jsx</code> + <code>SessionPanel</code> + <code>SearchBar</code>; embeddings cached in IndexedDB per memo.</dd>
+    </dl>
+  </article>
+
+  <article class="case pick">
+    <div class="case-head">
+      <span class="rank">Nº 2</span>
+      <h3>Zero-credit query triage &amp; smart routing</h3>
+      <span class="pill pickbadge">Demo pick</span>
+      <span class="pill low">Low risk</span>
+    </div>
+    <p class="story">The user types a query; before anything is billed, the browser already knows: is it legal? English or Hindi? Which of the 13 categories? Which pipeline should run?</p>
+    <dl>
+      <dt>What it does</dt><dd>As-you-type classification via embedding similarity against category prototypes: flags non-legal/junk queries (today a <em>paid</em> Gemini coordinator call does this), detects EN/HI, predicts legal category, and pre-fills the <code>/cases</code> filter set. Bad queries never reach the paid pipeline.</dd>
+      <dt>Why on-device</dt><dd><span class="chips"><span class="chip on">Cost</span><span class="chip on">Latency</span><span class="chip">Privacy</span><span class="chip">Offline</span></span></dd>
+      <dt>Model</dt><dd>Same <code>EmbeddingGemma-300M</code> as Nº 1 — one download powers both features. Category prototypes are just pre-computed embeddings of the 13 <code>category_l1</code> labels + exemplar queries.</dd>
+      <dt>Integration</dt><dd><code>SearchBar</code> in <code>PractitionerApp.jsx</code>; gate before the AG-UI SSE call in <code>backend_service</code>; filter pre-fill in <code>CaseLookupPage.jsx</code>.</dd>
+    </dl>
+  </article>
+
+  <article class="case">
+    <div class="case-head">
+      <span class="rank">Nº 3</span>
+      <h3>Privilege Guard — client-side PII detection &amp; redaction</h3>
+      <span class="pill med">Medium risk</span>
+    </div>
+    <p class="story">A lawyer pastes real client facts into a query. Before the text leaves the browser, names, phone numbers, and addresses are highlighted with a one-click "redact &amp; substitute" offer.</p>
+    <dl>
+      <dt>What it does</dt><dd>On-device NER over the query text; detected entities are replaced with neutral placeholders ("the accused", "the complainant") locally, so privileged identity details never reach Vitark's servers, Gemini, or logs. Enormously strong story for legal sales conversations.</dd>
+      <dt>Why on-device</dt><dd><span class="chips"><span class="chip on">Privacy</span><span class="chip on">Latency</span><span class="chip">Cost</span><span class="chip">Offline</span></span></dd>
+      <dt>Model</dt><dd>MobileBERT-class NER <code>.tflite</code> (≈ 25 MB int8), regexes for phones/CNR/emails. Risk: Hindi/Devanagari NER coverage needs evaluation; Indian-name recall must be tested.</dd>
+      <dt>Integration</dt><dd>Pre-submit hook in <code>SearchBar</code>; also valuable in Deep-Dive chat input.</dd>
+    </dl>
+  </article>
+
+  <article class="case">
+    <div class="case-head">
+      <span class="rank">Nº 4</span>
+      <h3>Client-side case reranking in Deep Dive</h3>
+      <span class="pill med">Medium risk</span>
+    </div>
+    <p class="story">In a Deep-Dive follow-up, the 25 cases already on screen instantly reorder by relevance to the new question — no server call, no Vertex Ranking fee.</p>
+    <dl>
+      <dt>What it does</dt><dd>The main pipeline already delivers cases with snippets to the client (<code>cases_preview</code> SSE feed, Cases Discussed table). Re-scoring those against follow-up questions locally offloads a slice of the per-call <code>semantic-ranker-default-004</code> spend and makes result exploration feel instant.</dd>
+      <dt>Why on-device</dt><dd><span class="chips"><span class="chip on">Cost</span><span class="chip on">Latency</span><span class="chip">Privacy</span><span class="chip">Offline</span></span></dd>
+      <dt>Model</dt><dd>EmbeddingGemma bi-encoder scoring (shared with Nº 1–2), or a small cross-encoder <code>.tflite</code> for higher fidelity. Risk: quality vs. Vertex's cross-encoder must be measured before replacing anything server-side.</dd>
+      <dt>Integration</dt><dd><code>CasesPreview</code> / <code>ResponseCard</code> components; Deep-Dive panel in <code>PractitionerApp.jsx</code>.</dd>
+    </dl>
+  </article>
+
+  <article class="case">
+    <div class="case-head">
+      <span class="rank">Nº 5</span>
+      <h3>Bilingual voice dictation (EN + Hindi)</h3>
+      <span class="pill high">Higher risk</span>
+    </div>
+    <p class="story">A lawyer on a phone between hearings dictates: "धारा 138 एनआई एक्ट में समन के बाद समझौता" — transcribed on-device, audio never uploaded.</p>
+    <dl>
+      <dt>What it does</dt><dd>On-device ASR for query input. Google's LiteRT.js benchmarks specifically call out transcription as a 5–60× WebGPU win, and the audio-never-leaves-the-device framing matches the privilege story.</dd>
+      <dt>Why on-device</dt><dd><span class="chips"><span class="chip on">Privacy</span><span class="chip on">Latency</span><span class="chip">Cost</span><span class="chip">Offline</span></span></dd>
+      <dt>Model</dt><dd>Whisper-tiny/base class <code>.tflite</code> (≈ 40–150 MB). Risk: streaming mic pipelines in-browser are fiddly; Hindi legal-vocabulary accuracy at small model sizes is unproven — prototype later, not first.</dd>
+      <dt>Integration</dt><dd>Mic button on <code>SearchBar</code>; mobile-first.</dd>
+    </dl>
+  </article>
+
+  <h2><span class="sec">3</span>Scorecard</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Use case</th><th>Privacy</th><th>Cost saved</th><th>Latency win</th><th>Offline</th><th>Model risk</th><th>Effort</th></tr>
+      </thead>
+      <tbody>
+        <tr class="pickrow"><td><strong>1 · Chamber Recall</strong></td><td><span class="dot">●●●<span class="off">○</span></span></td><td><span class="dot">●●●<span class="off">○</span></span></td><td><span class="dot">●●●●</span></td><td><span class="dot">●●●●</span></td><td>Low — official demo path</td><td class="num">~3 days</td></tr>
+        <tr class="pickrow"><td><strong>2 · Query triage</strong></td><td><span class="dot">●<span class="off">○○○</span></span></td><td><span class="dot">●●●●</span></td><td><span class="dot">●●●●</span></td><td><span class="dot">●●<span class="off">○○</span></span></td><td>Low — same model as Nº 1</td><td class="num">~2 days</td></tr>
+        <tr><td>3 · Privilege Guard</td><td><span class="dot">●●●●</span></td><td><span class="dot">●<span class="off">○○○</span></span></td><td><span class="dot">●●●<span class="off">○</span></span></td><td><span class="dot">●●<span class="off">○○</span></span></td><td>Medium — Hindi NER unproven</td><td class="num">~4 days</td></tr>
+        <tr><td>4 · Case reranking</td><td><span class="dot">●<span class="off">○○○</span></span></td><td><span class="dot">●●●<span class="off">○</span></span></td><td><span class="dot">●●●<span class="off">○</span></span></td><td><span class="dot">●●<span class="off">○○</span></span></td><td>Medium — quality bar vs. Vertex</td><td class="num">~4 days</td></tr>
+        <tr><td>5 · Voice dictation</td><td><span class="dot">●●●●</span></td><td><span class="dot">●●<span class="off">○○</span></span></td><td><span class="dot">●●<span class="off">○○</span></span></td><td><span class="dot">●●●<span class="off">○</span></span></td><td>High — streaming ASR + Hindi</td><td class="num">~1–2 wks</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>Recommendation: build Nº 1 + Nº 2 together as one demo — the "Query Intelligence Bar".</strong> Both run on a single EmbeddingGemma download, both sit on the same surface (the search bar), and together they demo every lever in one interaction: type a query → the browser instantly classifies it, detects language, suggests filters, and surfaces your own prior research — all before a single credit is spent or a single byte leaves the machine. It's also the lowest-risk path: it mirrors Google's own official LiteRT.js vector-search demo, so we're productionizing a proven pattern, not pioneering one.</p>
+  </div>
+
+  <h2><span class="sec">4</span>Demo architecture</h2>
+  <p class="h2-sub">One model, one worker, three outputs. Everything left of the dashed boundary is free and private.</p>
+
+  <div class="arch">
+    <div class="arch-flow">
+      <div class="arch-node"><b>Search bar</b><small>keystrokes, 250 ms debounce</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node hot"><b>Web Worker · LiteRT.js</b><small><code>@litertjs/core</code> · EmbeddingGemma .tflite · WebGPU, WASM fallback</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node"><b>Triage</b><small>legal? · EN/HI · category via prototype similarity</small></div>
+      <div class="arch-arrow">＋</div>
+      <div class="arch-node"><b>Chamber recall</b><small>cosine top-k over memo embeddings (IndexedDB)</small></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node"><b>UI chips + recall panel</b><small>only then: paid pipeline, if user proceeds</small></div>
+    </div>
+    <p class="arch-note">Model weights fetched once and cached via the Cache API with a visible download progress bar; embeddings computed off the main thread; a small perf HUD shows active backend (WebGPU/WASM) and per-inference milliseconds — that HUD <em>is</em> the demo's proof.</p>
+  </div>
+
+  <h2><span class="sec">5</span>Build plan</h2>
+
+  <div class="phase">
+    <div class="phase-tag">Phase 0<small>½–1 day</small></div>
+    <div>
+      <h3>Feasibility spike</h3>
+      <p>Load EmbeddingGemma via <code>@litertjs/core</code> in a bare Vite page in <code>E:\clone\web-ml</code>. Measure: model download size, cold compile time, per-embedding latency on WebGPU vs. WASM, and Hindi embedding sanity. Go/no-go gate for model choice.</p>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-tag">Phase 1<small>2–3 days</small></div>
+    <div>
+      <h3>Standalone demo app</h3>
+      <ul>
+        <li>Vite + React page styled to Vitark's editorial look, with a seed corpus of ~20 realistic legal memos (mixed EN/HI, spanning the 13 categories).</li>
+        <li>Live triage chips (legal/junk · language · category) and Chamber-recall results rendering as-you-type.</li>
+        <li>Perf HUD: backend badge, inference ms, model cache status, "0 credits spent" counter as the narrative hook.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-tag">Phase 2<small>1–2 days</small></div>
+    <div>
+      <h3>Hardening the demo</h3>
+      <ul>
+        <li>Cache API model persistence + download progress; graceful WASM fallback where WebGPU is absent (Safari/older hardware).</li>
+        <li>An offline toggle in the demo: cut the network, show recall still working — the courtroom story, made visceral.</li>
+        <li>Side-by-side "before/after": server triage (~2 s, costs a credit) vs. on-device (~30 ms, free).</li>
+      </ul>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-tag">Phase 3<small>later</small></div>
+    <div>
+      <h3>Vitark integration</h3>
+      <p>Port as <code>frontend/src/shared/ml/</code> with a <code>useLiteRT</code> hook beside the existing hooks; wire into <code>SearchBar</code>, <code>ChamberPage</code>, and the pre-submit gate; feature-flag it like <code>CHAMBER_ENABLED</code>. Nº 3 (Privilege Guard) becomes the natural second shipment on the same infrastructure.</p>
+    </div>
+  </div>
+
+  <h2><span class="sec">6</span>Honest risks</h2>
+  <ul>
+    <li><strong>Model download weight.</strong> EmbeddingGemma quantized is on the order of 150–200 MB — fine cached on a lawyer's laptop, heavy on first mobile load. Mitigation: background fetch after first paint, progress UI, Cache API persistence; evaluate smaller universal-sentence-encoder-class fallbacks if the spike says so.</li>
+    <li><strong>WebGPU coverage.</strong> Excellent on Chrome/Edge desktop, newer on Safari; WASM/XNNPACK fallback must be a first-class path, not an afterthought — embedding workloads remain usable on CPU.</li>
+    <li><strong>Hindi quality.</strong> EmbeddingGemma is multilingual and should handle Devanagari, but legal-domain Hindi must be spot-checked in Phase 0 before promising the bilingual story.</li>
+    <li><strong>Don't oversell replacement.</strong> On-device triage/recall <em>augments</em> the paid pipeline (it guards its entrance); it does not replace Vertex reranking or the ADK agents. The demo should frame it as the free, private front door to the paid engine.</li>
+  </ul>
+
+  <footer>
+    <span>Vitark AI × LiteRT.js — planning memorandum</span>
+    <span>Sources: google-ai-edge/litert · developers.googleblog.com (LiteRT.js launch) · vitark-agents codebase survey</span>
+  </footer>
+
+</div>

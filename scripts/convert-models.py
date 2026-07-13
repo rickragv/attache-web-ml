@@ -19,7 +19,11 @@ os.environ.setdefault("TRANSFORMERS_NO_ADVISORY_WARNINGS", "1")
 
 import numpy as np
 import tensorflow as tf
-from transformers import AutoTokenizer, TFAutoModelForSequenceClassification
+from transformers import (
+    AutoTokenizer,
+    TFAutoModelForSequenceClassification,
+    TFAutoModelForTokenClassification,
+)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SEQ = 256
@@ -34,6 +38,17 @@ TARGETS = [
             ("how long do refunds take", "The workflow syntax for GitHub Actions uses YAML."),
             ("webhook signature fails", "Verify the webhook signature using the shared secret and HMAC-SHA256."),
             ("webhook signature fails", "UPI mandates support a maximum of one lakh rupees per debit."),
+        ],
+    },
+    {
+        # Token classification (NER) for the Workspace knowledge graph.
+        "repo": "dslim/distilbert-NER",
+        "outdir": os.path.join(ROOT, "public", "models", "ner"),
+        "fname": "ner-distilbert.tflite",
+        "kind": "token",
+        "samples": [
+            ("Priya Sharma from Meridian Payments met the RBI team in Mumbai.", None),
+            ("Fernhill Retail raised a dispute with HDFC Bank over UTR AXISN52026.", None),
         ],
     },
     {
@@ -54,11 +69,31 @@ TARGETS = [
 
 def convert(target):
     repo, outdir, fname = target["repo"], target["outdir"], target["fname"]
+    kind = target.get("kind", "sequence")
     os.makedirs(outdir, exist_ok=True)
     print(f"\n=== {repo} ===")
 
     tokenizer = AutoTokenizer.from_pretrained(repo)
-    model = TFAutoModelForSequenceClassification.from_pretrained(repo, from_pt=True)
+    model_cls = (
+        TFAutoModelForTokenClassification if kind == "token" else TFAutoModelForSequenceClassification
+    )
+    try:
+        model = model_cls.from_pretrained(repo, from_pt=True)
+    except OSError:
+        # safetensors-only repo: round-trip through torch to a .bin save,
+        # which the TF from_pt loader understands
+        import tempfile
+
+        import torch  # noqa: F401
+        from transformers import AutoModelForTokenClassification, AutoModelForSequenceClassification
+
+        pt_cls = (
+            AutoModelForTokenClassification if kind == "token" else AutoModelForSequenceClassification
+        )
+        pt_model = pt_cls.from_pretrained(repo)
+        with tempfile.TemporaryDirectory() as tmp:
+            pt_model.save_pretrained(tmp, safe_serialization=False)
+            model = model_cls.from_pretrained(tmp, from_pt=True)
     tokenizer.save_vocabulary(outdir)
     print(f"vocab -> {outdir}")
     print(f"model_type = {model.config.model_type}   id2label = {model.config.id2label}")
@@ -131,9 +166,14 @@ def convert(target):
 
     ref_scores, lite_scores, max_diff = [], [], 0.0
     for a, b in target["samples"]:
-        enc = tokenizer(
-            a, b, padding="max_length", truncation=True, max_length=SEQ, return_tensors="np"
-        )
+        if b is None:
+            enc = tokenizer(
+                a, padding="max_length", truncation=True, max_length=SEQ, return_tensors="np"
+            )
+        else:
+            enc = tokenizer(
+                a, b, padding="max_length", truncation=True, max_length=SEQ, return_tensors="np"
+            )
         ref_kwargs = dict(input_ids=enc["input_ids"], attention_mask=enc["attention_mask"])
         if uses_type_ids:
             ref_kwargs["token_type_ids"] = enc.get(
@@ -144,10 +184,24 @@ def convert(target):
         ref_scores.append(ref)
         lite_scores.append(lite)
         max_diff = max(max_diff, float(np.max(np.abs(ref - lite))))
-        print(f"  ref={np.round(ref, 3)}  tflite={np.round(lite, 3)}")
+        if kind == "token":
+            n_real = int(enc["attention_mask"].sum())
+            ref_tags = np.argmax(ref[:n_real], axis=-1)
+            lite_tags = np.argmax(lite[:n_real], axis=-1)
+            agree = float((ref_tags == lite_tags).mean())
+            print(f"  token-tag agreement over {n_real} tokens: {agree:.3f}")
+        else:
+            print(f"  ref={np.round(ref, 3)}  tflite={np.round(lite, 3)}")
 
-    # ranking parity on the primary logit / argmax
-    if ref_scores[0].shape[-1] == 1:
+    # parity: ranking for sequence heads, per-token argmax for token heads
+    if kind == "token":
+        rank_ok = True
+        for r, l, (a, _) in zip(ref_scores, lite_scores, target["samples"]):
+            enc = tokenizer(a, padding="max_length", truncation=True, max_length=SEQ, return_tensors="np")
+            n_real = int(enc["attention_mask"].sum())
+            if float((np.argmax(r[:n_real], -1) == np.argmax(l[:n_real], -1)).mean()) < 0.97:
+                rank_ok = False
+    elif ref_scores[0].shape[-1] == 1:
         ref_order = np.argsort([-r[0] for r in ref_scores])
         lite_order = np.argsort([-l[0] for l in lite_scores])
         rank_ok = list(ref_order) == list(lite_order)

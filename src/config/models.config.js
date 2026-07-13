@@ -189,6 +189,30 @@ export const modelsConfig = {
     },
   },
 
+  /**
+   * Token-classification NER for the Workspace knowledge graph. Converted
+   * from dslim/distilbert-NER (BIO tags over PER/ORG/LOC/MISC). Pattern
+   * extraction (amounts, dates, emails, IDs) always runs alongside it and
+   * doubles as the fallback when the model is unavailable.
+   */
+  ner: {
+    id: 'ner',
+    label: 'DistilBERT NER',
+    runtime: 'LiteRT.js',
+    enabled: true,
+    context: 'main',
+    task: 'token',
+    wasmBase: wasmBases.litert,
+    modelUrl: '/models/ner/ner-distilbert.tflite',
+    vocabUrl: '/models/ner/vocab.txt',
+    approxBytes: 66 * 1024 * 1024,
+    seqLen: 256,
+    /** BIO label order of dslim/distilbert-NER (verified id2label). */
+    labels: ['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC'],
+    minScore: 0.6,
+    accelerators: ['wasm'],
+  },
+
   ocr: {
     providerChain: ['paddle', 'tesseract'],
     /** Target flagship — enable after validating a det/rec export on LiteRT. */
@@ -224,7 +248,8 @@ export const modelsConfig = {
        * hardware only — the answer stage stays feature-flagged.
        */
       modelUrl: '/models/gemma/gemma-4-E2B-it-web.task',
-      maxTokens: 768,
+      /** input + output combined; RAG prompts with 4-5 passages need room */
+      maxTokens: 4096,
       temperature: 0.6,
       topK: 40,
     },

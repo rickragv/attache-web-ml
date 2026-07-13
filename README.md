@@ -22,6 +22,12 @@ English + हिन्दी).
 | ![Keyword vs semantic rerank](docs/screenshots/compare.jpeg) *Compare: BM25 order vs on-device semantic rerank, with rank-movement deltas* | ![Scan a document](docs/screenshots/scan.jpeg) *Scan: photo → draggable corner quad → homography dewarp → OCR → indexed* |
 | ![Library](docs/screenshots/library.jpeg) *Library: bundled corpus + drag-drop uploads + scanned documents, filterable* | ![System](docs/screenshots/system.jpeg) *System: live provider/backend truth, model cache, telemetry, offline drill* |
 
+![Workspace — knowledge graph and document chat](docs/screenshots/workspace-chat.jpeg)
+
+*Workspace on a real 117-page SEC proxy statement: PDF → 113 chunks embedded → 468 entity
+mentions → typed knowledge graph — then "Who is the CEO and what was his total compensation?"
+answered with citations, entirely in the browser.*
+
 <img src="docs/screenshots/mobile-ask.jpeg" alt="Mobile layout" width="300" />
 
 *Mobile-first: the same pipeline behind a bottom-nav layout at 390 px.*
@@ -32,6 +38,7 @@ English + हिन्दी).
 | --- | --- |
 | **Ask** | The full verified-RAG pipeline: embed → zero-shot triage gate → semantic recall → **cross-encoder rerank** → optional **Gemma answer with live NLI claim verification** (green ✓ entailed / amber ~ unconfirmed / red ⚠ contradicted). Pipeline inspector shows every stage's status and ms. |
 | **Library** | The corpus, filterable by collection; drag-drop `.md`/`.txt` — or **Scan**: camera/photo → corner alignment → homography dewarp → OCR → indexed, all on-device |
+| **Workspace** | A private analysis room: drop up to 5 documents (`.pdf`/`.md`/`.txt`) → embedded + entities extracted (DistilBERT NER + patterns) → **live knowledge graph** (d3-force) → chat with the set via Gemma, retrieval scoped to those docs only. Verified against a 117-page SEC proxy statement. |
 | **Routing** | The triage classifier, live-editable: change labels/exemplars, rebuild prototypes in ms, test any query |
 | **Compare** | The same candidate pool ordered by keyword (BM25) vs. on-device semantic rerank, with rank-movement deltas |
 | **System** | Active provider/backend, model cache, telemetry, offline drill toggle |
@@ -44,7 +51,9 @@ English + हिन्दी).
 | Precision rerank | ms-marco-MiniLM-L6 cross-encoder | 23 MB | LiteRT.js · XNNPACK |
 | Answer | gemma-4-E2B-it (web .task) | 2 GB | MediaPipe GenAI |
 | Claim verification | DistilBERT-MNLI | 68 MB | LiteRT.js · XNNPACK |
+| Entity extraction | DistilBERT-NER (+ pattern rules) | 66 MB | LiteRT.js · XNNPACK |
 | OCR | Tesseract (LiteRT PaddleOCR slot config-gated) | ~15 MB | WASM |
+| PDF text | pdf.js (bundled worker) | — | WASM |
 
 The cross-encoder and NLI are converted from PyTorch by `scripts/convert-models.py`
 (TFLite dynamic-range int8) with score-parity checks against the reference — a conversion

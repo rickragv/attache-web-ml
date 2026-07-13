@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { AppShell } from './components/AppShell.jsx'
 import { AskView } from './views/AskView.jsx'
 import { LibraryView } from './views/LibraryView.jsx'
+import { WorkspaceView } from './views/WorkspaceView.jsx'
 import { RoutingView } from './views/RoutingView.jsx'
 import { CompareView } from './views/CompareView.jsx'
 import { SystemView } from './views/SystemView.jsx'
@@ -11,6 +12,7 @@ import { bootEngine } from './services/engineService.js'
 const VIEWS = {
   ask: AskView,
   library: LibraryView,
+  workspace: WorkspaceView,
   routing: RoutingView,
   compare: CompareView,
   system: SystemView,

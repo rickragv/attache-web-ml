@@ -1,11 +1,20 @@
 import { appConfig } from '../config/app.config.js'
 import { useStore } from '../state/store.js'
 import { formatBytes, cn } from '../lib/format.js'
-import { IconAsk, IconLibrary, IconRouting, IconCompare, IconSystem, IconOffline } from './icons.jsx'
+import {
+  IconAsk,
+  IconLibrary,
+  IconGraph,
+  IconRouting,
+  IconCompare,
+  IconSystem,
+  IconOffline,
+} from './icons.jsx'
 
 const NAV = [
   { id: 'ask', label: 'Ask', Icon: IconAsk },
   { id: 'library', label: 'Library', Icon: IconLibrary },
+  { id: 'workspace', label: 'Workspace', Icon: IconGraph },
   { id: 'routing', label: 'Routing', Icon: IconRouting },
   { id: 'compare', label: 'Compare', Icon: IconCompare },
   { id: 'system', label: 'System', Icon: IconSystem },

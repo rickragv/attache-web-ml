@@ -21,6 +21,8 @@ export const appConfig = {
     rerank: true,
     /** Camera/photo document intake (Track B). */
     scan: true,
+    /** Workspace: private doc set → entities → knowledge graph → chat. */
+    workspace: true,
     /** Offline drill toggle in System — blocks all network from the app. */
     offlineDrill: true,
     /** Allow users to add their own documents in Library. */
@@ -36,5 +38,20 @@ export const appConfig = {
     compareCandidates: 10,
     /** Telemetry ring buffer size. */
     maxTelemetryEvents: 240,
+  },
+
+  workspace: {
+    /** Hard cap on documents in a workspace session. */
+    maxDocs: 5,
+    /** Retrieved chunks fed to each chat turn. */
+    chatTopK: 5,
+    /** Conversation turns kept in the prompt window. */
+    historyTurns: 4,
+    /** Entities below this mention count stay off the graph. */
+    minMentions: 1,
+    /** Big documents (e.g. long PDFs) are sampled evenly to this many chunks. */
+    maxChunksPerDoc: 120,
+    /** Cap graph size so the canvas stays legible. */
+    maxEntities: 40,
   },
 }

@@ -119,6 +119,16 @@ export const IconScan = (p) => (
   </svg>
 )
 
+export const IconGraph = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="6" cy="6" r="2.6" />
+    <circle cx="18" cy="8" r="2.6" />
+    <circle cx="9" cy="18" r="2.6" />
+    <circle cx="18.5" cy="17" r="2" />
+    <path d="M8.3 7.2 15.5 8M7 8.4l1.4 7.1M11.5 17.4l5-0.3M16.6 9.9l1.4 5.1" />
+  </svg>
+)
+
 export const IconArrowUp = (p) => (
   <svg {...base} {...p}>
     <path d="M12 19V5m0 0-5 5m5-5 5 5" />

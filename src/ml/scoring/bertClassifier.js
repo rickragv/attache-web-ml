@@ -64,6 +64,22 @@ export function createBertClassifier(cfg) {
     },
 
     /**
+     * Token classification (cfg.task === 'token'): returns per-token logits
+     * for a single text — { ids, mask, logits } with logits laid out
+     * [seqLen × numLabels]. Used by the NER entity extractor.
+     */
+    async classifyTokens(text) {
+      if (!model) throw new Error(`${cfg.label} not initialised`)
+      const enc = wordpiece.encodeSingle(text, cfg.seqLen)
+      const inputs = buildInputs(litert, inputDetails, enc, cfg)
+      const outputs = await model.run(inputs)
+      const logits = Float32Array.from(await readTensor(outputs[0]))
+      for (const t of outputs) t.delete?.()
+      for (const t of inputs) t.delete?.()
+      return { ids: enc.inputIds, mask: enc.attentionMask, logits }
+    },
+
+    /**
      * Scores (textA, textB) pairs. Returns Float32Array rows of raw logits,
      * cfg.numLogits per pair.
      */

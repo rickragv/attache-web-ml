@@ -96,6 +96,21 @@ export const useStore = create((set, get) => ({
   },
   patchDictation: (patch) => set((s) => ({ dictation: { ...s.dictation, ...patch } })),
 
+  // ---- workspace (private doc set → graph → chat) ----
+  workspace: {
+    docs: [], // [{id, name, words, chunks, entities: n, status}]
+    status: 'empty', // empty | ingesting | ready | error
+    progress: null, // {docName, phase}
+    entities: [], // aggregated [{surface, type, count, docs[]}]
+    graph: null, // {nodes, links}
+    nerActive: false,
+    selected: null, // selected graph node id
+    chat: [], // [{role, text, cites?, streaming?}]
+    chatStatus: 'idle', // idle | thinking | streaming
+    error: null,
+  },
+  patchWorkspace: (patch) => set((s) => ({ workspace: { ...s.workspace, ...patch } })),
+
   // ---- telemetry ----
   telemetry: {
     events: [],

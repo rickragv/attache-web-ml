@@ -28,7 +28,7 @@ export async function initGemma(cfg, { onStatus } = {}) {
 
 export function buildGroundedPrompt(query, passages) {
   const context = passages
-    .map((p, i) => `[${i + 1}] ${p.doc?.title ?? p.chunk.docId} — ${p.chunk.heading}\n${p.chunk.text}`)
+    .map((p, i) => `[${i + 1}] ${p.doc?.title ?? p.chunk.docId} — ${p.chunk.heading}\n${p.chunk.text.slice(0, 900)}`)
     .join('\n\n')
   return [
     'You are a support analyst. Answer the question using ONLY the numbered passages below.',
@@ -40,6 +40,23 @@ export function buildGroundedPrompt(query, passages) {
     `Question: ${query}`,
     'Answer:',
   ].join('\n')
+}
+
+/** Generic streaming generation for arbitrary prompts (Workspace chat). */
+export function generateText(prompt, onToken) {
+  if (!llm) throw new Error('Gemma is not initialised')
+  let acc = ''
+  return new Promise((resolve, reject) => {
+    try {
+      llm.generateResponse(prompt, (partial, done) => {
+        acc += partial
+        onToken?.(acc, done)
+        if (done) resolve(acc)
+      })
+    } catch (err) {
+      reject(err)
+    }
+  })
 }
 
 /** Streams tokens via onToken(partialText, done). */
